@@ -1,0 +1,16 @@
+{
+  "name": "project_2",
+  "version": "1.0.0",
+  "description": "Project 2 for CS_F372",
+  "main": "index.js",
+  "scripts": {
+ 	"start": "nodemon index.js"
+  },
+  "author": "Travis Winterton",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.3",
+    "lodash": "^4.17.21",
+    "nodemon": "^2.0.15"
+  }
+}
