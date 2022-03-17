@@ -4,13 +4,15 @@
   "description": "Project 2 for CS_F372",
   "main": "index.js",
   "scripts": {
- 	"start": "nodemon index.js"
+    "start": "nodemon index.js"
   },
   "author": "Travis Winterton",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.19.2",
     "express": "^4.17.3",
     "lodash": "^4.17.21",
+    "mongodb": "^4.4.1",
     "nodemon": "^2.0.15"
   }
 }

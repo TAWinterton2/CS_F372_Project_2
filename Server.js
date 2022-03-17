@@ -7,15 +7,17 @@
 	//03/10/22: Created app.get() for home page, login, and video player
 	//03/13/22: Started app.get() for video player
 	//03/13/22: app.get("/video) can now play videos and output to html page
-//To do List:
-	// Add MongoDB Databse
-	// Add in Login - From Project 1 (Add in hashing if possible)
-	// Work on Search video function
+	//03/15/22: added Login html, and register html form previous project 
 
 
+//Start Server: sudo systemctl start mongod
+//Stop Server:  sudo systemctl stop mongod
+//Check server status: sudo systemctl status mongod
 
-//var MongoClient = require('mongodb').MongoClient;
-//var url = "mongodb://localhost:27017/";
+
+var MongoClient = require('mongodb').MongoClient;
+var url = "mongodb://localhost:27017/";
+
 
 const port = 8080;
 
@@ -26,24 +28,57 @@ const app = express();
 
 const fs = require("fs");
 
+app.use(bodyParser.urlencoded({ extended: true}));
+
 app.get("/", function(req, res) {
-	res.sendFile(__dirname + "/index.html");
+	res.sendFile(__dirname + "/login.html");
 });
 
 // more code will go here
 
 //Function for Login Page 
-app.get("/login", (req, res) => {
-	//TO DO!!!
+app.get('/login', (req, res) => {
+	res.sendFile(__dirname + '/login.html');
+});
+
+app.post('/login', (req,res) => {
+	var uid = req.body.uid;
+	var pwd = req.body.pwd;
+	var count = 0;
+	var query = {userid: uid, password:pwd};
+	MongoClient.connect(url, function(err, db){
+		if(err) throw err;
+		var dbo = db.db("userDB");
+		dbo.collection("users").find(query).toArray(function(err,result){
+			if(err) throw err;
+			//console.log(result);
+			count = result.length;
+			db.close();
+		if(count >0) res.sendFile(__dirname + '/video_player.html');
+		else res.sendFile(__dirname + '/failure.html');
+		});
+	});
 });
 
 //Function for Register
-app.get("/register", (req, res) => {
-	//TO DO!!!
+app.get('/register', (req, res) => {
+	res.sendFile(__dirname + '/register.html');
 });
 
-app.post("/register", (req, res) => {
-	//TO DO!!!
+
+app.post('/register', (req,res)=>{
+	var uid = req.body.uid;
+	var pwd = req.body.pwd;
+	MongoClient.connect(url, function(err, db){
+		if(err) throw err;
+		var dbo = db.db("userDB");
+		var newUser = {userid: uid, password: pwd};
+		dbo.collection("users").insertOne(newUser, function(err, res){
+			if(err) throw err;
+			db.close();
+		});
+	})
+	res.sendFile(__dirname + '/video_player.html');
 });
 	
 	
