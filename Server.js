@@ -8,7 +8,11 @@
 	//03/13/22: Started app.get() for video player
 	//03/13/22: app.get("/video) can now play videos and output to html page
 	//03/15/22: added Login html, and register html form previous project 
-
+	//03/18/22: changed to ejs format, npm installed bcrypt, mongoose, alert
+//		    polished login and register POSTs, 
+//		    added functionality to prevent duplicate username registers
+//		    failed login or register shows alert message
+//		    suceessful login redirects to the single video page for now
 
 //Start Server: sudo systemctl start mongod
 //Stop Server:  sudo systemctl stop mongod
@@ -20,65 +24,102 @@ var url = "mongodb://localhost:27017/";
 
 
 const port = 8080;
-
 const bodyParser = require('body-parser');
-const express = require("express");
+const express = require('express');
+const fs = require('fs');
+const alert = require('alert');
+var app = express();
 
-const app = express();
 
-const fs = require("fs");
+const mongoose = require('mongoose');
 
+const bcrypt = require('bcrypt');
+const saltRounds = 5;
+
+app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true}));
+app.use(bodyParser.json());
 
-app.get("/", function(req, res) {
-	res.sendFile(__dirname + "/login.html");
+mongoose.connect("mongodb://localhost:27017/", {
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
+});
+
+var userSchema = new mongoose.Schema({
+	username: {type: String, unique: true},
+	password: String,
+	userType: String,
+	videoLimit: {type: Number, default: 3}
+});
+
+const User = mongoose.model("user", userSchema);
+
+app.listen(port, () => {
+	console.log("Listening on port 8080!");
+});
+
+app.get("/", (req, res) => {
+	res.render('index');
 });
 
 // more code will go here
 
 //Function for Login Page 
 app.get('/login', (req, res) => {
-	res.sendFile(__dirname + '/login.html');
+	res.render('login');
 });
 
-app.post('/login', (req,res) => {
-	var uid = req.body.uid;
-	var pwd = req.body.pwd;
-	var count = 0;
-	var query = {userid: uid, password:pwd};
-	MongoClient.connect(url, function(err, db){
-		if(err) throw err;
-		var dbo = db.db("userDB");
-		dbo.collection("users").find(query).toArray(function(err,result){
-			if(err) throw err;
-			//console.log(result);
-			count = result.length;
-			db.close();
-		if(count >0) res.sendFile(__dirname + '/video_player.html');
-		else res.sendFile(__dirname + '/failure.html');
-		});
-	});
+app.post('/login', async (req,res) => {
+	try {
+		const user = await User.findOne({ username: req.body.uid});
+		if(user) {
+			const cmp = await bcrypt.compare(req.body.pwd, user.password);
+			if (cmp) {
+				res.render('video');
+			}
+			else {
+				alert("Wrong username or password");
+				res.render('login');
+			}
+		}
+		else {
+			alert("Wrong username or password");
+			res.render('login');
+		}
+	}
+	catch (error) {
+		//console.log(error);
+		res.status(500).send("Internal server error");
+	}
 });
 
 //Function for Register
 app.get('/register', (req, res) => {
-	res.sendFile(__dirname + '/register.html');
+	res.render('register');
 });
 
 
-app.post('/register', (req,res)=>{
-	var uid = req.body.uid;
-	var pwd = req.body.pwd;
-	MongoClient.connect(url, function(err, db){
-		if(err) throw err;
-		var dbo = db.db("userDB");
-		var newUser = {userid: uid, password: pwd};
-		dbo.collection("users").insertOne(newUser, function(err, res){
-			if(err) throw err;
-			db.close();
-		});
-	})
-	res.sendFile(__dirname + '/video_player.html');
+app.post('/register', async (req,res)=>{
+	
+	try{
+	const hashpwd = await bcrypt.hash(req.body.pwd, saltRounds);
+		const insert = await User.create({
+		username: req.body.uid,
+		password: hashpwd,
+		userType: req.body.usertype,
+	});
+	alert('Register successful!');
+	res.render('login');
+	}
+	catch (error) {
+		//console.log(error);
+		if(error.code === 11000) 
+		{
+			alert('Username already exists!');
+			res.render('register');
+		}
+		else res.status(500).send("Internal server error");
+	}
 });
 	
 	
@@ -130,7 +171,4 @@ app.get("/video", (req, res) => {
 	 
 });
 
-app.listen(port, () => {
-	console.log("Listening on port 8080!");
-});
 
