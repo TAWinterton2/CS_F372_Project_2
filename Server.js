@@ -123,18 +123,10 @@ app.post('/register', async (req,res)=>{
 });
 	
 	
-
-//Funciton for Home page where users can search videos
-app.get("/home", (req, res) => {
-	//TO DO!!!
+//.post for search bar
+app.post("/search", (req, res) =>{
+	//
 });
-
-//Function for search results
-app.get("/search_results", (req, res) => {
-	//TO DO!!!
-});
-
-
  
 
 //Function for Video Player of given video
