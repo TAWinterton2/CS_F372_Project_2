@@ -26,19 +26,34 @@ var url = "mongodb://localhost:27017/";
 const port = 8080;
 const bodyParser = require('body-parser');
 const express = require('express');
+const cookieParser = require('cookie-parser');
+const sessions = require('express-session');
 const fs = require('fs');
 const alert = require('alert');
 var app = express();
+app.set("view engine", "ejs");
+
+//express-session
+//maxAge for cookie 24 hours
+const cookieTimeOut = 1000 * 24 * 60 * 60;
+app.use(sessions({
+	secret: "uniquestringkeythatshouldreallyberandomlygenerated",
+	saveUninitialized: true,
+	cookie: {maxAge: cookieTimeOut},
+	resave: false
+}));
+var session;
 
 
+//Database libraries
 const mongoose = require('mongoose');
-
 const bcrypt = require('bcrypt');
 const saltRounds = 5;
 
-app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(express.static("public"));
 
 mongoose.connect("mongodb://localhost:27017/", {
 	useNewUrlParser: true,
@@ -48,6 +63,7 @@ mongoose.connect("mongodb://localhost:27017/", {
 var userSchema = new mongoose.Schema({
 	username: {type: String, unique: true},
 	password: String,
+	//userType: viewer, editor, manager
 	userType: String,
 	videoLimit: {type: Number, default: 3}
 });
@@ -59,10 +75,12 @@ app.listen(port, () => {
 });
 
 app.get("/", (req, res) => {
-	res.render('index');
+	session=req.session;
+	if(session.userid){
+		res.render('home');
+	}
+	else {res.render('index');}
 });
-
-// more code will go here
 
 //Function for Login Page 
 app.get('/login', (req, res) => {
@@ -70,12 +88,16 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', async (req,res) => {
-	try {
-		const user = await User.findOne({ username: req.body.uid});
+	try { 
+		var uid = req.body.uid;
+		const user = await User.findOne({ username: uid});
 		if(user) {
 			const cmp = await bcrypt.compare(req.body.pwd, user.password);
 			if (cmp) {
-				res.render('video');
+				session=req.session;
+				session.userid = uid;
+				session.usertype = user.userType;
+				res.render('home');
 			}
 			else {
 				alert("Wrong username or password");
@@ -91,6 +113,11 @@ app.post('/login', async (req,res) => {
 		//console.log(error);
 		res.status(500).send("Internal server error");
 	}
+});
+
+app.get('/logout', (req,res) => {
+	req.session.destroy();
+	res.redirect('/');
 });
 
 //Function for Register
