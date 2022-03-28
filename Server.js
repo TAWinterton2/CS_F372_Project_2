@@ -76,9 +76,9 @@ app.listen(port, () => {
 
 app.get("/", (req, res) => {
 	session=req.session;
-	if(session.userid){
-		res.render('home');
-	}
+	console.log(session.usertype);	
+        if (session.usertype == "editor") {res.render('home2');}
+	else if(session.userid){res.render('home');}
 	else {res.render('index');}
 });
 
@@ -97,7 +97,7 @@ app.post('/login', async (req,res) => {
 				session=req.session;
 				session.userid = uid;
 				session.usertype = user.userType;
-				res.render('home');
+				res.redirect('/');
 			}
 			else {
 				alert("Wrong username or password");
@@ -149,7 +149,24 @@ app.post('/register', async (req,res)=>{
 	}
 });
 	
-	
+//manage videos, upload, and delete
+//
+app.get('/manage', (req,res) =>{
+session = req.session;
+	if(session.usertype == "editor"){
+		res.render('manage');
+	}
+	else {res.redirect('/');}
+});
+
+app.get('upload', (req, res) =>{
+	//
+});
+
+app.get('delete', (req, res) =>{
+	//
+});
+
 //.post for search bar
 app.post("/search", (req, res) =>{
 	//
