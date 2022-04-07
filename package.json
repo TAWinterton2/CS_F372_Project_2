@@ -9,10 +9,23 @@
   "author": "Travis Winterton",
   "license": "ISC",
   "dependencies": {
+    "alert": "^5.0.10",
+    "bcrypt": "^5.0.1",
     "body-parser": "^1.19.2",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.0",
+    "ejs": "^3.1.6",
     "express": "^4.17.3",
+    "express-session": "^1.17.2",
+    "gridfs": "^1.0.0",
+    "GridFS": "^0.3.0",
+    "js-alert": "^1.0.4",
     "lodash": "^4.17.21",
     "mongodb": "^4.4.1",
-    "nodemon": "^2.0.15"
+    "mongoose": "^6.2.7",
+    "multer": "^0.1.8"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.1"
   }
 }
