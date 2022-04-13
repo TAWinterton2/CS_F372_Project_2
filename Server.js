@@ -75,8 +75,7 @@ app.listen(port, () => {
 });
 
 app.get("/", (req, res) => {
-	session=req.session;
-	console.log(session.usertype);	
+	session=req.session;	
         if (session.usertype == "editor") {res.render('home2');}
 	else if(session.userid){res.render('home');}
 	else {res.render('index');}
@@ -127,11 +126,22 @@ app.get('/register', (req, res) => {
 
 
 app.post('/register', async (req,res)=>{
-	
+	let uid = req.body.uid;
+	if(uid.indexOf(' ') >= 0 || uid == "")
+	{
+		alert('Empty spaces in username are not allowed!');
+		res.render('register');
+	}
+	else if(req.body.pwd == "")
+	{
+		alert('Password is missing!');
+		res.render('register');
+	}
+	else{
 	try{
 	const hashpwd = await bcrypt.hash(req.body.pwd, saltRounds);
 		const insert = await User.create({
-		username: req.body.uid,
+		username: uid,
 		password: hashpwd,
 		userType: req.body.usertype,
 	});
@@ -146,6 +156,7 @@ app.post('/register', async (req,res)=>{
 			res.render('register');
 		}
 		else res.status(500).send("Internal server error");
+	}
 	}
 });
 	
