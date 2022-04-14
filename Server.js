@@ -127,12 +127,6 @@ app.get('/register', (req, res) => {
 
 
 app.post('/register', async (req,res)=>{
-	
-	try{
-	if(usernameInput.indexOf(' ') >= 0
-	{
-		
-	}
 	const hashpwd = await bcrypt.hash(req.body.pwd, saltRounds);
 		const insert = await User.create({
 		username: req.body.uid,
