@@ -129,6 +129,10 @@ app.get('/register', (req, res) => {
 app.post('/register', async (req,res)=>{
 	
 	try{
+	if(usernameInput.indexOf(' ') >= 0
+	{
+		
+	}
 	const hashpwd = await bcrypt.hash(req.body.pwd, saltRounds);
 		const insert = await User.create({
 		username: req.body.uid,
@@ -176,6 +180,12 @@ app.post("/search", (req, res) =>{
 //Function for Video Player of given video
 
 app.get("/video", (req, res) => {
+	res.render("video_player");
+});
+
+
+app.get("/video_player", (req, res) => {
+	
 	const range = req.headers.range;
 	if(!range) 
 	{
@@ -205,9 +215,5 @@ app.get("/video", (req, res) => {
 	//Stream the video chunk to client
 	videoStream.pipe(res);
 	 
-});
-
-app.get("/video_player", (req, res) => {
-	res.render("video");
 });
 
